@@ -12,7 +12,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="800.0" prefWidth="1200.0" stylesheets="@../CSS/styleshit.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefHeight="790.0" prefWidth="1400.0" stylesheets="@../CSS/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.prismx.controller.Controller">
     <children>
         <VBox spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <padding>
@@ -39,7 +39,6 @@
                         <HBox alignment="CENTER_RIGHT" spacing="20.0">
                             <children>
                                 <Button mnemonicParsing="false" text="History" />
-                                <Button mnemonicParsing="false" text="Login / Sign Up" />
                                 <Button mnemonicParsing="false" text="Dark Mode/Light Mode" />
                             </children>
                         </HBox>
@@ -112,7 +111,7 @@
 
                         <HBox alignment="CENTER" spacing="40.0">
                             <children>
-                                <Button fx:id="btnOpenFile" styleClass="primary-button" text="Open File" />
+                                <Button fx:id="btnOpenFile" onAction="#btnOpenFileAction" styleClass="primary-button" text="Open File" />
 
                                 <Button fx:id="btnLexical" styleClass="action-button" text="Lexical" />
 
