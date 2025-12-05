@@ -7,7 +7,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -42,7 +41,6 @@ public class Controller implements Initializable {
     @FXML private ImageView imgThemeIcon;
 
     private boolean isLightMode = false;
-    private boolean loadIsSuccessful = false;
     private boolean lexicalIsSuccessful = false;
     private boolean syntaxIsSuccessful = false;
 
@@ -52,7 +50,8 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         resetStatuses();
-        disableButtons();
+        disableAnalysisButtons();
+        btnOpenFile.setDisable(false);
         sourceCodeArea.setEditable(false);
         resultArea.setEditable(false);
     }
@@ -65,7 +64,6 @@ public class Controller implements Initializable {
             rootPane.getStyleClass().add("light-mode");
             Image moonIcon = new Image(getClass().getResourceAsStream("/com/images/darkmode_icon.png"));
             imgThemeIcon.setImage(moonIcon);
-
         } else {
             rootPane.getStyleClass().remove("light-mode");
             Image sunIcon = new Image(getClass().getResourceAsStream("/com/images/lightmode_icon.png"));
@@ -77,18 +75,21 @@ public class Controller implements Initializable {
     public void btnOpenFileAction(){
         Stage stage = (Stage) sourceCodeArea.getScene().getWindow();
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Text File");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+        fileChooser.setTitle("Open File");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Java & Text Files", "*.txt", "*.java"));
         selectedFile = fileChooser.showOpenDialog(stage);
 
         if (selectedFile != null) {
             resetStatuses();
+            disableAnalysisButtons();
+
             try (BufferedReader br = new BufferedReader(new FileReader(selectedFile))) {
                 StringBuilder content = new StringBuilder();
                 String line;
                 for(int i=1;(line=br.readLine())!=null;i++){
                     content.append(i+"   "+line).append("\n");
                 }
+
                 if(content.toString().isEmpty()||content.toString().isBlank()){
                     sourceCodeArea.setText("");
                     resultArea.appendText("UnexpectedEmptyStringError: The text file does not contain string(s).");
@@ -96,11 +97,11 @@ public class Controller implements Initializable {
                 else {
                     sourceCodeArea.setText(content.toString());
                     resultArea.clear();
-                    resetStatuses();
                     statusLoaded.setFill(Color.GREEN);
-                    loadIsSuccessful = true;
-                    enableButtons();
+
                     resultArea.appendText("File \"" + selectedFile.getName() + "\" successfully loaded.\n");
+                    btnLexical.setDisable(false);
+                    btnOpenFile.setDisable(true);
                 }
 
             } catch (IOException e) {
@@ -112,25 +113,33 @@ public class Controller implements Initializable {
 
     @FXML
     public void btnLexicalAction() throws IOException {
-        lexicalAction la=new lexicalAction(selectedFile);
+        btnLexical.setDisable(true);
+
+        lexicalAction la = new lexicalAction(selectedFile);
         la.lexicalAnalysis();
+
         if(!la.lexicalSuccessStatus()){
-            statusLoaded.setFill(Color.RED);
+            statusLexical.setFill(Color.RED);
             resultArea.appendText("\n>>> ERROR: Lexical Analysis attempt failed.\n");
+            lexicalIsSuccessful = false;
+            btnSyntax.setDisable(true);
+            btnSemantic.setDisable(true);
         }
         else {
             lexicalIsSuccessful = true;
-            processedLexical=la.getLexicalDict();
-            processedTokens=la.getTokenDict();
-            enableButtons();
+            processedLexical = la.getLexicalDict();
+            processedTokens = la.getTokenDict();
             statusLexical.setFill(Color.GREEN);
             resultArea.appendText("\n>>> Lexical Analysis attempt successful.\n");
             resultArea.appendText(la.getContent());
+            btnSyntax.setDisable(false);
         }
     }
 
     @FXML
     public void btnSyntaxAction(){
+        btnSyntax.setDisable(true);
+
         resultArea.appendText("\n>>> Starting Syntax Analysis...\n");
         syntaxAction syn = new syntaxAction(processedTokens, processedLexical);
         syn.analyzeSyntax();
@@ -140,26 +149,30 @@ public class Controller implements Initializable {
             statusSyntax.setFill(Color.GREEN);
             syntaxIsSuccessful = true;
             resultArea.appendText(">>> Syntax Analysis successful. No errors found.\n");
-            enableButtons();}
+            btnSemantic.setDisable(false);
+        }
         else{
             statusSyntax.setFill(Color.RED);
             syntaxIsSuccessful = false;
             resultArea.appendText(">>> Syntax Analysis Failed! Found " + errors.size() + " error(s):\n");
 
-            // Print specific errors to the text area
             for (Map.Entry<Integer, String> entry : errors.entrySet()) {
                 resultArea.appendText("Line " + entry.getKey() + ": " + entry.getValue() + "\n");
             }
-            disableButtons();
+
+            btnSemantic.setDisable(true);
         }
     }
 
     @FXML
     public void btnSemanticAction(){
+        btnSemantic.setDisable(true);
         semanticsAction sem = new semanticsAction(processedTokens, processedLexical);
         sem.analyzeSemantics();
         HashMap<Integer, String> errors = sem.getErrors();
-        boolean hasErrors = false;
+
+        boolean hasErrors = !errors.isEmpty();
+
         if (hasErrors) {
             statusSemantic.setFill(Color.RED);
             resultArea.appendText(">>> Semantic Analysis Failed.\n");
@@ -173,7 +186,6 @@ public class Controller implements Initializable {
             if (entry.getValue().isEmpty()) continue;
 
             if (errors.containsKey(lineNumber)) {
-                hasErrors = true;
                 resultArea.appendText("Line " + lineNumber + " Error: " + errors.get(lineNumber) + " \n");
             } else {
                 resultArea.appendText("Line " + lineNumber + ": Semantics Correct \n");
@@ -186,6 +198,8 @@ public class Controller implements Initializable {
         sourceCodeArea.clear();
         resultArea.clear();
         resetStatuses();
+        disableAnalysisButtons();
+        btnOpenFile.setDisable(false);
     }
 
     public void showErrorAlert(String title, String message) {
@@ -195,45 +209,19 @@ public class Controller implements Initializable {
         alert.showAndWait();
     }
 
-    public void enableButtons(){
-        if(loadIsSuccessful){
-            btnLexical.setDisable(false);
-        }
-        if(lexicalIsSuccessful){
-            btnSyntax.setDisable(false);
-        }
-        if(syntaxIsSuccessful){
-            btnSemantic.setDisable(false);
-        }
-
+    public void disableAnalysisButtons(){
+        btnLexical.setDisable(true);
+        btnSyntax.setDisable(true);
+        btnSemantic.setDisable(true);
     }
 
-    public void disableButtons(){
-        if(!loadIsSuccessful){
-            btnLexical.setDisable(true);
-        }
-        if(!lexicalIsSuccessful){
-            btnSyntax.setDisable(true);
-        }
-        if(!syntaxIsSuccessful){
-            btnSemantic.setDisable(true);
-        }
-
-
-    }
     public void resetStatuses() {
         statusLoaded.setFill(Color.GREY);
         statusLexical.setFill(Color.GREY);
         statusSyntax.setFill(Color.GREY);
         statusSemantic.setFill(Color.GREY);
-        loadIsSuccessful=false;
-        lexicalIsSuccessful=false;
-        syntaxIsSuccessful=false;
-        disableButtons();
 
+        lexicalIsSuccessful = false;
+        syntaxIsSuccessful = false;
     }
-
-
-
-
 }
