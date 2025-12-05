@@ -113,13 +113,13 @@
                             <children>
                                 <Button fx:id="btnOpenFile" onAction="#btnOpenFileAction" styleClass="primary-button" text="Open File" />
 
-                                <Button fx:id="btnLexical" styleClass="action-button" text="Lexical" />
+                                <Button fx:id="btnLexical" onAction="#btnLexicalAction" styleClass="action-button" text="Lexical" />
 
-                                <Button fx:id="btnSyntax" styleClass="action-button" text="Syntax" />
+                                <Button fx:id="btnSyntax" onAction="#btnSyntaxAction" styleClass="action-button" text="Syntax" />
 
-                                <Button fx:id="btnSemantic" styleClass="action-button" text="Semantic" />
+                                <Button fx:id="btnSemantic" onAction="#btnSemanticAction" styleClass="action-button" text="Semantic" />
 
-                                <Button fx:id="btnClear" styleClass="danger-button" text="Clear" />
+                                <Button fx:id="btnClear" onAction="#btnClearAction" styleClass="danger-button" text="Clear" />
                             </children>
                             <padding>
                                 <Insets bottom="10.0" />
