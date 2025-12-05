@@ -33,7 +33,7 @@
   <li><strong>File Support:</strong> Native loading of <code>.txt</code> and <code>.java</code> source files.</li>
 </ul>
 
-<h3>⚙️ Compiler Engine</h3>
+<h3>Compiler Engine</h3>
 <table>
   <thead>
     <tr>
@@ -89,7 +89,7 @@ count = 50;
 
 <hr />
 
-<h2>🛠️ Architecture</h2>
+<h2>Architecture</h2>
 <p>The project follows the <strong>MVC (Model-View-Controller)</strong> pattern:</p>
 <ul>
   <li><strong>Controller (<code>com.prismx.controller</code>):</strong> Orchestrates the UI flow and analysis sequence.</li>
