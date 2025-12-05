@@ -17,7 +17,6 @@
     <a href="https://openjfx.io/">
       <img src="https://img.shields.io/badge/JavaFX-UI-4285F4?style=for-the-badge&logo=openjdk&logoColor=white" alt="JavaFX">
     </a>
-    <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
   </p>
 
 </div>
